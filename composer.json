@@ -1,0 +1,32 @@
+{
+  "name": "hoaaah/yii2-rest-api-template",
+  "description": "REST API Template with Yii2",
+  "license": "Apache-2.0",
+  "require": {
+    "yiisoft/yii2": "~2.0.0",
+    "azuyalabs/yasumi": "^2.5",
+    "yii2tech/ar-softdelete": "^1.0",
+    "symfony/dotenv": "^5.4",
+    "ramsey/uuid": "^4.2",
+    "yiisoft/yii2-swiftmailer": "~2.1.0",
+    "imagekit/imagekit": "^3.0",
+    "kartik-v/yii2-mpdf": "dev-master"
+  },
+  "authors": [
+    {
+      "name": "Arief Wijaya",
+      "email": "hoaaah.arief@gmail.com"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://asset-packagist.org"
+    }
+  ],
+  "config": {
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true
+    }
+  }
+}
