@@ -103,6 +103,8 @@ class ProfileController extends ActiveController
   {
     $params = Yii::$app->request->getBodyParams();
     $transaction = Yii::$app->db->beginTransaction();
+    $amount = str_replace([',', '$ '], '', $params['amount']);
+    $date = isset($params['date']) ? $params['date'] : date('Y-m-d');
 
     try {
       $user = Profile::findOne(['id' => $id]);
@@ -111,14 +113,14 @@ class ProfileController extends ActiveController
 
       $transactions->user_id = $user->user_id;
       $transactions->wallet = $wallet->id;
-      $transactions->month_year = date('Y-m');
-      $transactions->date = date('Y-m-d');
-      $transactions->amount_money = $params['amount'];
+      $transactions->month_year = substr($date, 0, 7);
+      $transactions->date = $date;
+      $transactions->amount_money = $amount;
       $transactions->type_transaction = 1; //novo aporte
-      isset($params['description']) ? $transactions->description = $params['description'] : $transactions->description = "Investimento de $params[amount] no mês de " . date('m/Y');
+      isset($params['description']) ? $transactions->description = $params['description'] : $transactions->description = "Investimento de $params[amount] em $date";
 
-      $wallet->amount += $params['amount'];
-      $wallet->income += $params['amount'];
+      $wallet->amount += $amount;
+      $wallet->income += $amount;
 
       $wallet->save();
       $transactions->save();
@@ -188,13 +190,15 @@ class ProfileController extends ActiveController
   {
     $params = Yii::$app->request->getBodyParams();
     $transaction = Yii::$app->db->beginTransaction();
+    $amount = str_replace([',', '$ '], '', $params['amount']);
+    $date = isset($params['date']) ? $params['date'] : date('Y-m-d');
 
     try {
       $user = Profile::findOne(['id' => $id]);
       $transactions = new Transactions();
       $wallet = Wallet::findOne(['user_id' => $user->user_id]);
 
-      if ($wallet->amount < $params['amount']) {
+      if ($wallet->amount < $amount) {
         $response['status'] = Status::STATUS_BAD_REQUEST;
         $response['message'] = "Saldo insuficiente!";
         $response['data'] = [];
@@ -204,12 +208,12 @@ class ProfileController extends ActiveController
 
       $transactions->user_id = $user->user_id;
       $transactions->wallet = $wallet->id;
-      $transactions->month_year = date('Y-m');
-      $transactions->date = date('Y-m-d');
-      $transactions->amount_money = $params['amount'];
+      $transactions->month_year = substr($date, 0, 7);
+      $transactions->date = $date;
+      $transactions->amount_money = $amount;
       $transactions->type_transaction = 3; //saque
-      isset($params['description']) ? $transactions->description = $params['description'] : $transactions->description = "Saque de $params[amount] no mês de " . date('m/Y');
-      $wallet->amount -= $params['amount'];
+      isset($params['description']) ? $transactions->description = $params['description'] : $transactions->description = "Saque de $params[amount] em $date";
+      $wallet->amount -= $amount;
 
       $wallet->save();
       $transactions->save();
@@ -234,6 +238,9 @@ class ProfileController extends ActiveController
   {
     $params = Yii::$app->request->getBodyParams();
     $transaction = Yii::$app->db->beginTransaction();
+    $amount = str_replace([',', '$ '], '', $params['amount']);
+    $date = isset($params['date']) ? $params['date'] : date('Y-m-d');
+
     try {
       $user = Profile::findOne(['id' => $id]);
       $user_transfer = Profile::findOne(['id' => $params['user_id']]);
@@ -250,7 +257,7 @@ class ProfileController extends ActiveController
         // throw new Exception('User not found!');
       }
 
-      if ($wallet->amount < $params['amount']) {
+      if ($wallet->amount < $amount) {
         $response['status'] = Status::STATUS_BAD_REQUEST;
         $response['message'] = "Saldo insuficiente!";
         $response['data'] = [];
@@ -258,25 +265,25 @@ class ProfileController extends ActiveController
         // throw new Exception('Saldo insuficiente!');
       }
 
-      $amount_transfer = number_format($params['amount'], 2, '.', '');
+      $amount_transfer = number_format($amount, 2, '.', '');
       $transactions->user_id = $user->user_id;
       $transactions->wallet = $wallet->id;
-      $transactions->month_year = date('Y-m');
-      $transactions->date = date('Y-m-d');
-      $transactions->amount_money = $params['amount'];
+      $transactions->month_year = substr($date, 0, 7);
+      $transactions->date = $date;
+      $transactions->amount_money = $amount;
       $transactions->type_transaction = 4; //transferencia
-      isset($params['description']) ? $transactions->description = $params['description'] : $transactions->description = "Transferencia de $amount_transfer para o usuário $user_transfer->user_id no mês de " . date('m/Y');
+      isset($params['description']) ? $transactions->description = $params['description'] : $transactions->description = "Transferencia de $amount_transfer para o usuário $user_transfer->user_id em $date";
 
       $transactions_transfer->user_id = $user_transfer->user_id;
       $transactions_transfer->wallet = $wallet_transfer->id;
-      $transactions_transfer->month_year = date('Y-m');
-      $transactions_transfer->date = date('Y-m-d');
-      $transactions_transfer->amount_money = $params['amount'];
+      $transactions_transfer->month_year = substr($date, 0, 7);
+      $transactions_transfer->date = $date;
+      $transactions_transfer->amount_money = $amount;
       $transactions_transfer->type_transaction = 4; //transferencia
-      isset($params['description']) ? $transactions_transfer->description = $params['description'] : $transactions_transfer->description = "Transferencia de $amount_transfer do usuário $user->user_id no mês de " . date('m/Y');
+      isset($params['description']) ? $transactions_transfer->description = $params['description'] : $transactions_transfer->description = "Transferencia de $amount_transfer do usuário $user->user_id em $date";
 
-      $wallet->amount -= $params['amount'];
-      $wallet_transfer->amount += $params['amount'];
+      $wallet->amount -= $amount;
+      $wallet_transfer->amount += $amount;
 
       $wallet->save();
       $wallet_transfer->save();
@@ -301,6 +308,7 @@ class ProfileController extends ActiveController
   {
     try {
       $user = TokenAuthenticationHelper::token();
+
       $profile = Profile::find()->where(['user_id' => $user['id']])->one();
       $address = Address::find()->where(['id' => $profile['address']])->one();
       $bank = Bank::find()->where(['id' => $profile['bank_account']])->one();
@@ -336,7 +344,7 @@ class ProfileController extends ActiveController
         $response['data'] = [];
         return $response;
       }
-      $profile = Profile::find()->where(['<>','username', 'admin'])->all();
+      $profile = Profile::find()->where(['<>', 'name', 'admin'])->all();
 
       $response['status'] = Status::STATUS_ACCEPTED;
       $response['message'] = 'Success';
@@ -365,6 +373,34 @@ class ProfileController extends ActiveController
         return $response;
       }
 
+      $profile = Profile::find()->where(['id' => $id])->one();
+      $address = Address::find()->where(['id' => $profile['address']])->one();
+      $bank = Bank::find()->where(['id' => $profile['bank_account']])->one();
+      $wallet = Wallet::find()->where(['user_id' => $profile['user_id']])->one();
+
+      $data['profile'] = $profile;
+      $data['address'] = $address;
+      $data['bank'] = $bank;
+      $data['wallet'] = $wallet;
+
+      $response['status'] = Status::STATUS_CREATED;
+      $response['message'] = 'Success!';
+      $response['data'] = $data;
+
+    } catch (\Throwable $th) {
+      Yii::$app->response->statusCode = Status::STATUS_BAD_REQUEST;
+      $response['status'] = Status::STATUS_BAD_REQUEST;
+      $response['message'] = $th->getMessage();
+      $response['data'] = [];
+    }
+
+    return $response;
+  }
+
+  public function actionAdminUser($id)
+  {
+    try {
+      $user = TokenAuthenticationHelper::token();
       $profile = Profile::find()->where(['id' => $id])->one();
       $address = Address::find()->where(['id' => $profile['address']])->one();
       $bank = Bank::find()->where(['id' => $profile['bank_account']])->one();

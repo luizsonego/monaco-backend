@@ -1,6 +1,7 @@
 # yii console command
 # /yii
-
+.docker
+.docker/
 # phpstorm project files
 .idea
 

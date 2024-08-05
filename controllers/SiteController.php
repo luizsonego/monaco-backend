@@ -177,6 +177,7 @@ class SiteController extends Controller
             Yii::$app->response->statusCode = Status::STATUS_FOUND;
             $user->generateAuthKey();
             $user->save();
+            
             return [
                 'status' => Status::STATUS_FOUND,
                 'message' => 'Login Succeed, save your token',
@@ -292,9 +293,8 @@ class SiteController extends Controller
     public function actionReset($token)
     {
         $params = Yii::$app->request->post();
+        $transaction = Yii::$app->db->beginTransaction();
         try {
-            $transaction = Yii::$app->db->beginTransaction();
-            return User::isPasswordResetTokenValid($token);
             if (!User::isPasswordResetTokenValid($token)) {
                 return [
                     'status' => Status::STATUS_BAD_REQUEST,
@@ -310,7 +310,6 @@ class SiteController extends Controller
                     'data' => []
                 ];
             }
-
             $user = User::findByPasswordResetToken($token);
             $user->password_hash = Yii::$app->security->generatePasswordHash($params['password']);
             $user->setPassword($params['password']);
@@ -328,6 +327,49 @@ class SiteController extends Controller
             $response['message'] = $th->getMessage();
             $response['data'] = [];
         }
+
+        return $response;
+    }
+
+
+    public function actionUser()
+    {
+        $user = TokenAuthenticationHelper::token();
+
+        $response['status'] = Status::STATUS_OK;
+        $response['message'] = "Alterado com sucesso";
+        $response['data'] = $user;
+
+        return $response;
+    }
+    public function actionUpdatePass()
+    {
+        $transaction = Yii::$app->db->beginTransaction();
+        $params = Yii::$app->request->post();
+        try {
+            $user = TokenAuthenticationHelper::token();
+
+            if (!$user->validatePassword($params['oldPass'])) {
+                $response['status'] = Status::STATUS_BAD_REQUEST;
+                $response['message'] = "Senha Incorreta";
+                $response['data'] = [];
+                return $response;
+            }
+            $user->setPassword($params['password']);
+            $user->save();
+            $transaction->commit();
+
+            $response['status'] = Status::STATUS_ACCEPTED;
+            $response['message'] = "Senha alterada com sucesso";
+            $response['data'] = $user;
+
+        } catch (\Throwable $th) {
+            $transaction->rollBack();
+            $response['status'] = Status::STATUS_ERROR;
+            $response['message'] = $th->getMessage();
+            $response['data'] = [];
+        }
+
 
         return $response;
     }
