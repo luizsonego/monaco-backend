@@ -36,6 +36,7 @@ class Profile extends ActiveRecord
       [
         [
           'name',
+          'apelido',
           'document',
           'phone',
           'whatsapp',
@@ -43,6 +44,7 @@ class Profile extends ActiveRecord
           'bank_account',
           'time_contract',
           'observation',
+          'account_number',
         ],
         'string'
       ],
@@ -50,4 +52,20 @@ class Profile extends ActiveRecord
     ];
   }
 
+  public static function generateAccountNumber($documentNumber)
+  {
+    // Gerar uma hash do número usando crc32
+    $hash = crc32(ltrim($documentNumber, '0'));
+    // Formatar a hash como um número de sete dígitos
+    $formattedHash = sprintf('%07d', $hash);
+    $hashCode4limit = substr($formattedHash, 0, 4);
+
+    // Gerar nove dígitos aleatórios
+    $number = mt_rand(10000, 99999);
+
+    // Inserir o hífen no oitavo dígito
+    $formattedNumber = substr_replace($number . $hashCode4limit, '-', 8, 0);
+
+    return $formattedNumber;
+  }
 }

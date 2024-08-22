@@ -781,3 +781,82 @@ $_SERVER = [
     ]
     'argc' => 2
 ]
+2024-08-11 21:44:38 [-][-][-][error][yii\console\UnknownCommandException] yii\base\InvalidRouteException: Unable to resolve the request: migrate/rwdo in /app/vendor/yiisoft/yii2/base/Controller.php:149
+Stack trace:
+#0 /app/vendor/yiisoft/yii2/console/Controller.php(180): yii\base\Controller->runAction('rwdo', Array)
+#1 /app/vendor/yiisoft/yii2/base/Module.php(552): yii\console\Controller->runAction('rwdo', Array)
+#2 /app/vendor/yiisoft/yii2/console/Application.php(180): yii\base\Module->runAction('migrate/rwdo', Array)
+#3 /app/vendor/yiisoft/yii2/console/Application.php(147): yii\console\Application->runAction('migrate/rwdo', Array)
+#4 /app/vendor/yiisoft/yii2/base/Application.php(384): yii\console\Application->handleRequest(Object(yii\console\Request))
+#5 /app/yii(20): yii\base\Application->run()
+#6 {main}
+
+Next yii\console\UnknownCommandException: Unknown command "migrate/rwdo". in /app/vendor/yiisoft/yii2/console/Application.php:183
+Stack trace:
+#0 /app/vendor/yiisoft/yii2/console/Application.php(147): yii\console\Application->runAction('migrate/rwdo', Array)
+#1 /app/vendor/yiisoft/yii2/base/Application.php(384): yii\console\Application->handleRequest(Object(yii\console\Request))
+#2 /app/yii(20): yii\base\Application->run()
+#3 {main}
+2024-08-11 21:44:38 [-][-][-][info][application] $_GET = []
+
+$_POST = []
+
+$_FILES = []
+
+$_COOKIE = []
+
+$_SERVER = [
+    'DB_PASSWORD' => 'root'
+    'MAIL_PORT' => '465'
+    'EMAIL_NO_REPLAY' => 'no-reply@monacobank.com.br'
+    'PHP_ENABLE_XDEBUG' => '0'
+    'HOST_URL_APP' => 'https://monaco-bank.vercel.app'
+    'PHP_USER_ID' => '33'
+    'HOSTNAME' => '2b281e77ae21'
+    'PHP_VERSION' => '7.4.33'
+    'APACHE_CONFDIR' => '/etc/apache2'
+    'PHP_INI_DIR' => '/usr/local/etc/php'
+    'GPG_KEYS' => '42670A7FE4D0441C8E4632349E4FDC074A4EF02D 5A52880781F755608BF815FC910DEB46F53EA312'
+    'DB_TABLE_PREFIX' => ''
+    'PHP_LDFLAGS' => '-Wl,-O1 -pie'
+    'PWD' => '/app'
+    'IMAGEKIT_ENDPOINT_URL' => 'https://ik.imagekit.io/qqrtx9mgqo'
+    'DB_PORT' => '3306'
+    'HOME' => '/root'
+    'IMAGEKIT_PUBLIC_KEY' => 'public_Hqt+AgHm0gjcWTX7lFzrSP0QwhE='
+    'MAIL_USERNAME' => '1a46282950670c'
+    'MAIL_PASSWORD' => 'dc79921eb2467d'
+    'PHP_SHA256' => '924846abf93bc613815c55dd3f5809377813ac62a9ec4eb3778675b82a27b927'
+    'PHPIZE_DEPS' => 'autoconf 		dpkg-dev 		file 		g++ 		gcc 		libc-dev 		make 		pkg-config 		re2c'
+    'DB_USERNAME' => 'root'
+    'HOST_URL_SITE' => 'https://monaco-bank.vercel.app'
+    'TERM' => 'linux'
+    'DB_DSN' => ''
+    'DB_HOST' => 'api2-mysql-1'
+    'PHP_URL' => 'https://www.php.net/distributions/php-7.4.33.tar.xz'
+    'ZAPSIGN_API_TOKEN' => 'ce4b6fff-8c8d-40a6-96ce-d3e1ec88bc89e78297c8-d73e-4318-bfe4-b350f1c45e82'
+    'IMAGEKIT_PRIVATE_KEY' => 'private_saIi2s+t0MtdFSK3g4MCXBrA5is='
+    'SHLVL' => '1'
+    'COMPOSER_ALLOW_SUPERUSER' => '1'
+    'PHP_CFLAGS' => '-fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64'
+    'HOST_URL' => 'localhost:8000/contracts/'
+    'APACHE_ENVVARS' => '/etc/apache2/envvars'
+    'PATH' => '/app:/app/vendor/bin:/root/.composer/vendor/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+    'MAIL_HOST' => 'sandbox.smtp.mailtrap.io'
+    'DB_DATABASE' => 'MONACO'
+    'PHP_ASC_URL' => 'https://www.php.net/distributions/php-7.4.33.tar.xz.asc'
+    'PHP_CPPFLAGS' => '-fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64'
+    '_' => './yii'
+    'PHP_SELF' => './yii'
+    'SCRIPT_NAME' => './yii'
+    'SCRIPT_FILENAME' => './yii'
+    'PATH_TRANSLATED' => './yii'
+    'DOCUMENT_ROOT' => ''
+    'REQUEST_TIME_FLOAT' => 1723412678.6739
+    'REQUEST_TIME' => 1723412678
+    'argv' => [
+        0 => './yii'
+        1 => 'migrate/rwdo'
+    ]
+    'argc' => 2
+]

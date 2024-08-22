@@ -123,6 +123,7 @@ class SiteController extends Controller
             $profile->name = $params['name'];
             $profile->address = $address->id;
             $profile->bank_account = $bank->id;
+            $profile->account_number = Profile::generateAccountNumber($params['name']);
             $profile->save();
 
             $wallet = new \app\models\Wallet();
@@ -177,7 +178,13 @@ class SiteController extends Controller
             Yii::$app->response->statusCode = Status::STATUS_FOUND;
             $user->generateAuthKey();
             $user->save();
-            
+
+            $number_account = Profile::find()->where(['user_id' => $user->id])->one();
+            if (empty($number_account['account_number'])) {
+                $number_account->account_number = Profile::generateAccountNumber($number_account['name']);
+                $number_account->save();
+            }
+
             return [
                 'status' => Status::STATUS_FOUND,
                 'message' => 'Login Succeed, save your token',

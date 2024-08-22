@@ -265,6 +265,7 @@ class ProfileController extends ActiveController
         // throw new Exception('Saldo insuficiente!');
       }
 
+      // saindo
       $amount_transfer = number_format($amount, 2, '.', '');
       $transactions->user_id = $user->user_id;
       $transactions->wallet = $wallet->id;
@@ -272,15 +273,21 @@ class ProfileController extends ActiveController
       $transactions->date = $date;
       $transactions->amount_money = $amount;
       $transactions->type_transaction = 4; //transferencia
-      isset($params['description']) ? $transactions->description = $params['description'] : $transactions->description = "Transferencia de $amount_transfer para o usuário $user_transfer->user_id em $date";
+      isset($params['description']) ?
+        $transactions->description = $params['description'] :
+        $transactions->description = "Wire transfer off $amount_transfer to $user_transfer->name ($user_transfer->account_number) in $date";
 
+      // chegando
       $transactions_transfer->user_id = $user_transfer->user_id;
       $transactions_transfer->wallet = $wallet_transfer->id;
       $transactions_transfer->month_year = substr($date, 0, 7);
       $transactions_transfer->date = $date;
       $transactions_transfer->amount_money = $amount;
       $transactions_transfer->type_transaction = 4; //transferencia
-      isset($params['description']) ? $transactions_transfer->description = $params['description'] : $transactions_transfer->description = "Transferencia de $amount_transfer do usuário $user->user_id em $date";
+      isset($params['description']) ?
+        $transactions_transfer->description = $params['description'] :
+        $transactions_transfer->description = "Wire transfer off $amount_transfer by $user->name ($user->account_number) in $date";
+      // $transactions_transfer->description = "Transferencia de $amount_transfer do usuário $user->user_id em $date";
 
       $wallet->amount -= $amount;
       $wallet_transfer->amount += $amount;
@@ -424,6 +431,8 @@ class ProfileController extends ActiveController
 
     return $response;
   }
+
+
 
 
 }
