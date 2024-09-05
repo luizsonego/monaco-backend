@@ -11,14 +11,15 @@ use Yii;
 
 class TokenAuthenticationHelper
 {
-  public static function token(): UserIdentity
+  public static function token()
   {
     // Obtenha o header de autorização
     $authHeader = Yii::$app->request->headers->get('Authorization') ?? '';
 
     // Verifique se o header segue o formato "Bearer <token>"
     if (!preg_match('/^Bearer\s+(.+)$/', $authHeader, $matches)) {
-      throw new Exception('Invalid Token', Status::STATUS_UNAUTHORIZED);
+      return 0;
+      // throw new Exception('Invalid Token', Status::STATUS_UNAUTHORIZED);
     }
 
     // Encontre o usuário pelo token
@@ -26,7 +27,8 @@ class TokenAuthenticationHelper
 
     // Verifique se o usuário foi encontrado
     if (!$user) {
-      throw new Exception('Invalid Token User', Status::STATUS_UNAUTHORIZED);
+      return 0;
+      // throw new Exception('Invalid Token User', Status::STATUS_UNAUTHORIZED);
     }
 
     return $user;

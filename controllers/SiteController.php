@@ -9,7 +9,9 @@ use app\models\Post;
 use app\models\User;
 use app\models\Profile;
 use app\models\Status;
+use Exception;
 use Yii;
+use yii\db\Query;
 use yii\filters\Cors;
 use yii\rest\Controller;
 use yii\filters\VerbFilter;
@@ -77,15 +79,17 @@ class SiteController extends Controller
     {
         $role = TokenAuthenticationHelper::token();
 
-        if ($role->access_given !== 99) {
-            return [
-                'status' => Status::STATUS_UNAUTHORIZED,
-                'message' => 'You are not authorized to access this page.',
-                'data' => []
-            ];
+        $model = new User();
+        if ($role['access_given'] === 0) {
+            $model->status = User::STATUS_INACTIVE;
+        } else {
+            if ($role['access_given'] === 99) {
+                $model->status = User::STATUS_ACTIVE;
+            } else {
+                $model->status = User::STATUS_INACTIVE;
+            }
         }
 
-        $model = new User();
         $params = Yii::$app->request->post();
         if (!$params) {
             Yii::$app->response->statusCode = Status::STATUS_BAD_REQUEST;
@@ -99,15 +103,26 @@ class SiteController extends Controller
         $transaction = Yii::$app->db->beginTransaction();
 
         try {
+            if (User::find()->where(['email' => $params['email']])->one()) {
+                throw new Exception("email already in use", 500);
+            }
+            if (User::find()->where(['username' => $params['username']])->one()) {
+                throw new Exception("email already in use", 500);
+            }
+            $model->attributes = $params;
             $model->username = $params['username'];
             $model->email = $params['email'];
             $model->access_given = 1;
 
             $model->setPassword($params['password']);
             $model->generateAuthKey();
-            $model->status = User::STATUS_ACTIVE;
+            // $model->status = User::STATUS_ACTIVE;
 
-            $model->save();
+            if (!$model->save()) {
+                throw new Exception("Error Processing Request", 1);
+
+            }
+
 
             $address = new Address();
             $address->user_id = $model->id;
@@ -123,6 +138,7 @@ class SiteController extends Controller
             $profile->name = $params['name'];
             $profile->address = $address->id;
             $profile->bank_account = $bank->id;
+            $profile->selfie_cadastro = isset($params['selfie']) ? $params['selfie'] : 'sem foto';
             $profile->account_number = Profile::generateAccountNumber($params['name']);
             $profile->save();
 
@@ -147,9 +163,10 @@ class SiteController extends Controller
             $model->getErrors();
             $response['hasErrors'] = $model->hasErrors();
             $response['errors'] = $model->getErrors();
-            $response['message'] = "Error saving data! {$th}";
+            $response['message'] = "Error saving data! {$th->getMessage()}";
             $response['data'] = [];
-            Yii::$app->response->statusCode = Status::STATUS_INTERNAL_SERVER_ERROR;
+            $response['status'] = 500;
+            // Yii::$app->response->statusCode = Status::STATUS_INTERNAL_SERVER_ERROR;
 
         }
 
@@ -377,6 +394,145 @@ class SiteController extends Controller
             $response['data'] = [];
         }
 
+
+        return $response;
+    }
+
+
+    public function actionDelete()
+    {
+        $role = TokenAuthenticationHelper::token();
+
+        $transaction = Yii::$app->db->beginTransaction();
+
+        try {
+            if ($role->access_given !== 99) {
+                throw new Exception('You are not authorized to access this page.', Status::STATUS_BAD_REQUEST);
+            }
+
+            $params = Yii::$app->request->post();
+
+            $user = User::find()->where(['id' => $params['id']])->one();
+            $profile = Profile::find()->where(['user_id' => $user['id']])->one();
+
+            $username = $user['username'];
+            $user->status = User::STATUS_DELETED;
+            $user->username = "{$username}_DELETED";
+
+            $profile->deleted_at = time();
+
+            $user->save();
+            $profile->save();
+
+            $transaction->commit();
+
+            $response['status'] = Status::STATUS_ACCEPTED;
+            $response['message'] = "User deleted";
+            $response['data'] = [];
+
+        } catch (\Throwable $th) {
+            $transaction->rollBack();
+            $response['status'] = Status::STATUS_ERROR;
+            $response['message'] = $th->getMessage();
+            $response['data'] = [];
+        }
+
+        return $response;
+
+    }
+
+    public function actionNewUsers()
+    {
+        $role = TokenAuthenticationHelper::token();
+
+        try {
+
+            if ($role->access_given !== 99) {
+                throw new Exception('You are not authorized to access this page.', Status::STATUS_BAD_REQUEST);
+            }
+
+            $user = (new Query())
+                ->select(['*'])
+                ->from('user U')
+                ->leftJoin('profile P', 'P.user_id = U.id')
+                ->where(['status' => User::STATUS_INACTIVE])
+                ->all();
+
+            $response['status'] = Status::STATUS_ACCEPTED;
+            $response['message'] = "Success";
+            $response['data'] = $user;
+
+        } catch (\Throwable $th) {
+            $response['status'] = Status::STATUS_ERROR;
+            $response['message'] = $th->getMessage();
+            $response['data'] = [];
+        }
+
+        return $response;
+    }
+
+    public function actionUserBlocked()
+    {
+        $role = TokenAuthenticationHelper::token();
+
+        try {
+
+            if ($role->access_given !== 99) {
+                throw new Exception('You are not authorized to access this page.', Status::STATUS_BAD_REQUEST);
+            }
+
+            $user = (new Query())
+                ->select(['*'])
+                ->from('user U')
+                ->leftJoin('profile P', 'P.user_id = U.id')
+                ->where(['status' => User::STATUS_DELETED])
+                ->all();
+
+            $response['status'] = Status::STATUS_ACCEPTED;
+            $response['message'] = "Success";
+            $response['data'] = $user;
+
+        } catch (\Throwable $th) {
+            $response['status'] = Status::STATUS_ERROR;
+            $response['message'] = $th->getMessage();
+            $response['data'] = [];
+        }
+
+        return $response;
+    }
+
+    public function actionActivateUser()
+    {
+        $role = TokenAuthenticationHelper::token();
+        $transaction = Yii::$app->db->beginTransaction();
+
+        try {
+            if ($role->access_given !== 99) {
+                throw new Exception('You are not authorized to access this page.', Status::STATUS_BAD_REQUEST);
+            }
+            $params = Yii::$app->request->post();
+
+            $user = User::find()->where(['id' => $params['id']])->one();
+            $profile = Profile::find()->where(['user_id' => $user['id']])->one();
+
+            $user->status = User::STATUS_ACTIVE;
+            $profile->deleted_at = null;
+
+            $user->save();
+            $profile->save();
+
+            $transaction->commit();
+
+            $response['status'] = Status::STATUS_ACCEPTED;
+            $response['message'] = "User activate";
+            $response['data'] = [];
+
+        } catch (\Throwable $th) {
+            $transaction->rollBack();
+            $response['status'] = Status::STATUS_ERROR;
+            $response['message'] = $th->getMessage();
+            $response['data'] = [];
+        }
 
         return $response;
     }

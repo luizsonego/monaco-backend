@@ -384,11 +384,13 @@ class ProfileController extends ActiveController
       $address = Address::find()->where(['id' => $profile['address']])->one();
       $bank = Bank::find()->where(['id' => $profile['bank_account']])->one();
       $wallet = Wallet::find()->where(['user_id' => $profile['user_id']])->one();
+      $user = User::find()->select(['status', 'username'])->where(['id' => $profile['user_id']])->one();
 
       $data['profile'] = $profile;
       $data['address'] = $address;
       $data['bank'] = $bank;
       $data['wallet'] = $wallet;
+      $data['user'] = $user;
 
       $response['status'] = Status::STATUS_CREATED;
       $response['message'] = 'Success!';

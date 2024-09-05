@@ -45,6 +45,10 @@ class Profile extends ActiveRecord
           'time_contract',
           'observation',
           'account_number',
+          'selfie_cadastro',
+          'profile_pic',
+          'number_contract',
+          'number_passport',
         ],
         'string'
       ],

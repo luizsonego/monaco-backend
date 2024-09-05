@@ -3,6 +3,7 @@
 namespace app\modules\v1\controllers;
 
 use app\helpers\TokenAuthenticationHelper;
+use app\models\Bank;
 use app\models\Profile;
 use app\models\Status;
 use app\models\Transactions;
@@ -235,6 +236,62 @@ class MovementsController extends ActiveController
     }
 
     return $response;
+  }
+
+  public function actionTransfer()
+  {
+    $params = Yii::$app->request->getBodyParams();
+    $transaction = Yii::$app->db->beginTransaction();
+    $amount = str_replace([',', '$ '], '', $params['amount']);
+    $date = isset($params['date']) ? $params['date'] : date('Y-m-d');
+    try {
+      $user = TokenAuthenticationHelper::token();
+      $perfil = Profile::findOne(['user_id' => $user['id']]);
+      $user_transfer = Profile::findOne(['account_number' => $params['account_number']]);
+      $transactions = new Transactions();
+      $transactions_transfer = new Transactions();
+      // $wallet = Wallet::findOne(['user_id' => $user->user_id]);
+      // $wallet_transfer = Wallet::findOne(['user_id' => $user_transfer->user_id]);
+
+      $data = [
+        'user' => $perfil['id'],
+        'id' => $user_transfer['id'],
+        'account_number' => $user_transfer['account_number'],
+        'name' => $user_transfer['name'],
+        'email' => $user_transfer['email'],
+        'amount' => $amount
+      ];
+
+      $response['status'] = Status::STATUS_OK;
+      $response['message'] = 'Success';
+      $response['data'] = $data;
+
+    } catch (\Throwable $th) {
+      $response['status'] = Status::STATUS_ERROR;
+      $response['message'] = $th->getMessage();
+      $response['data'] = [];
+    }
+
+    return $response;
+  }
+  public function actionTransferConfirmed()
+  {
+    $params = Yii::$app->request->getBodyParams();
+    $transaction = Yii::$app->db->beginTransaction();
+    $amount = str_replace([',', '$ '], '', $params['amount']);
+    $date = isset($params['date']) ? $params['date'] : date('Y-m-d');
+
+    try {
+      $user = TokenAuthenticationHelper::token();
+      $user_transfer = Profile::findOne(['account_number' => $params['account_number']]);
+      $transactions = new Transactions();
+      $transactions_transfer = new Transactions();
+      $wallet = Wallet::findOne(['user_id' => $user->user_id]);
+      $wallet_transfer = Wallet::findOne(['user_id' => $user_transfer->user_id]);
+      //code...
+    } catch (\Throwable $th) {
+      //throw $th;
+    }
   }
 
 }
